@@ -5,21 +5,52 @@
 \textbf{MDCEVモデル}は，1日を観測単位として，活動への時間配分を「離散的な活動洗濯＋連続的な時間配分」として定式化するものである．
 一方で，離散選択モデルである\textbf{Recurisive Logit Model}は1日を時間ステップ列とみなし，1ステップ列からの遷移列から学習するものである．場所次元と過去活動の効果は両方とも無視するものとし，「時間配分」と「時系列推移」の2つのモデルでそれぞれ何を表現するか，できるかを比較する
 東京都市圏で実施された4つのPPデータを使用するものとする．
-\begin{table}[htb]
-\centering
-\caption{東京都圏で実施された4つのPP調査}
+\begin{center}
+\captionof{table}{東京都圏で実施された4つのPP調査}
 \label{tab:pp-survey-tokyo}
-\begin{tabular}{c l l r}
+
+\vspace{3pt}
+
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{14pt}
+
+\begin{tabular}{|c|l|l|r|}
 \hline
-period & \multicolumn{1}{c}{期間} & \multicolumn{1}{c}{文脈} & \multicolumn{1}{c}{n\_users (raw)} \\
+\rowcolor[HTML]{F7F7F7}
+\textbf{period} 
+& \multicolumn{1}{c|}{\textbf{期間}} 
+& \multicolumn{1}{c|}{\textbf{文脈}} 
+& \multicolumn{1}{c|}{\textbf{n\_users (raw)}} \\
 \hline
-1 & 2019-07-08 .. 2020-02-11 & \textbf{コロナ前} & 305 \\
-2 & 2021-10-03 .. 2021-11-25 & \textbf{コロナ規制明け直後} & 115 \\
-3 & 2022-12-19 .. 2023-01-30 & コロナ後・冬 & 182 \\
-4 & 2023-11-15 .. 2023-11-29 & コロナ後・秋 & 223 \\
+
+1 
+& 2019-07-08 .. 2020-02-11 
+& \textbf{コロナ前} 
+& 305 \\
 \hline
+
+\rowcolor[HTML]{F3F5F8}
+2 
+& 2021-10-03 .. 2021-11-25 
+& \textbf{コロナ規制明け直後} 
+& 115 \\
+\hline
+
+3 
+& 2022-12-19 .. 2023-01-30 
+& コロナ後・冬 
+& 182 \\
+\hline
+
+\rowcolor[HTML]{F3F5F8}
+4 
+& 2023-11-15 .. 2023-11-29 
+& コロナ後・秋 
+& 223 \\
+\hline
+
 \end{tabular}
-\end{table}
+\end{center}
 
 活動カテゴリとしては，H(home)，S(Shopping)，W(Commute/Work)，W2(Business)，O (Other)，予算制約はT=24hとする．
 \begin{center}
