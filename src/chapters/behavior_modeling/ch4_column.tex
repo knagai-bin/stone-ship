@@ -9,50 +9,21 @@
 東京都市圏で実施された4つのPPデータを使用するものとする．
 
 \begin{center}
-\captionof{table}{東京都圏で実施された4つのPP調査}
-\label{tab:pp-survey-tokyo}
+  \renewcommand{\arraystretch}{1.5}
+  \setlength{\tabcolsep}{14pt}
 
-\vspace{3pt}
-
-\renewcommand{\arraystretch}{1.5}
-\setlength{\tabcolsep}{14pt}
-
-\begin{tabular}{|c|l|l|r|}
-\hline
-\rowcolor[HTML]{F7F7F7}
-\textbf{period} 
-& \multicolumn{1}{c|}{\textbf{期間}} 
-& \multicolumn{1}{c|}{\textbf{文脈}} 
-& \multicolumn{1}{c|}{\textbf{n\_users (raw)}} \\
-\hline
-
-1 
-& 2019-07-08 .. 2020-02-11 
-& \textbf{コロナ前} 
-& 305 \\
-\hline
-
-\rowcolor[HTML]{F3F5F8}
-2 
-& 2021-10-03 .. 2021-11-25 
-& \textbf{コロナ規制明け直後} 
-& 115 \\
-\hline
-
-3 
-& 2022-12-19 .. 2023-01-30 
-& コロナ後・冬 
-& 182 \\
-\hline
-
-\rowcolor[HTML]{F3F5F8}
-4 
-& 2023-11-15 .. 2023-11-29 
-& コロナ後・秋 
-& 223 \\
-\hline
-
-\end{tabular}
+  \begin{tabular}{cllr}
+    \toprule
+    \textbf{period} & \textbf{期間} & \textbf{文脈} & \textbf{n\_users (raw)} \\
+    \midrule
+    1 & 2019-07-08 .. 2020-02-11 & \textbf{コロナ前} & 305 \\
+    2 & 2021-10-03 .. 2021-11-25 & \textbf{コロナ規制明け直後} & 115 \\
+    3 & 2022-12-19 .. 2023-01-30 & コロナ後・冬 & 182 \\
+    4 & 2023-11-15 .. 2023-11-29 & コロナ後・秋 & 223 \\
+    \bottomrule
+  \end{tabular}
+  \captionof{table}{東京都圏で実施された4つのPP調査}
+  \label{tab:pp-survey-tokyo}
 \end{center}
 
 活動カテゴリとしては，H(home)，S(Shopping)，W(Commute/Work)，W2(Business)，O(Other)，予算制約は$T=24\mathrm{h}$とする．
@@ -183,34 +154,28 @@ MDCEVモデルで推定された$\gamma_k$から求まる期待時間と，RLモ
 
 \vspace{3pt}
 
-\begin{tabular}{lcccc}
-\hline
-&
-\begin{tabular}[c]{@{}c@{}}Phase1\\ コロナ前\end{tabular}
-&
-\begin{tabular}[c]{@{}c@{}}Phase2\\ コロナ規制直後\end{tabular}
-&
-\begin{tabular}[c]{@{}c@{}}Phase3\\ コロナ後冬\end{tabular}
-&
-\begin{tabular}[c]{@{}c@{}}Phase4\\ コロナ後秋\end{tabular}
-\\
-\hline
-サンプル数
-& 6532 & 2299 & 1394 & 1581 \\
-\hline
-observed H(home)
-& 14.23 & 14.77 & 15.49 & 15.45 \\
-\hline
-observed S(shop/dine)
-& 1.65 & 1.84 & 1.77 & 2.19 \\
-\hline
-observed W(commute/work)
-& 6.61 & 6.54 & 5.56 & 4.73 \\
-\hline
-observed O(other)
-& 0.59 & 0.44 & 0.77 & 0.63 \\
-\hline
-\end{tabular}
+\begin{center}
+  \begin{tabular}{lcccc}
+    \toprule
+    &
+    \begin{tabular}[c]{@{}c@{}}Phase1\\ コロナ前\end{tabular}
+    &
+    \begin{tabular}[c]{@{}c@{}}Phase2\\ コロナ規制直後\end{tabular}
+    &
+    \begin{tabular}[c]{@{}c@{}}Phase3\\ コロナ後冬\end{tabular}
+    &
+    \begin{tabular}[c]{@{}c@{}}Phase4\\ コロナ後秋\end{tabular}
+    \\
+    \midrule
+    サンプル数 & 6532 & 2299 & 1394 & 1581 \\
+    observed H(home) & 14.23 & 14.77 & 15.49 & 15.45 \\
+    observed S(shop/dine) & 1.65 & 1.84 & 1.77 & 2.19 \\
+    observed W(commute/work) & 6.61 & 6.54 & 5.56 & 4.73 \\
+    observed O(other) & 0.59 & 0.44 & 0.77 & 0.63 \\
+    \bottomrule
+  \end{tabular}
+  \captionof{table}{各Phaseにおける観測活動時間}
+  \label{tab:observed-activity-time}
 \end{center}
 
 \textbf{RLモデルを用いた比較}
