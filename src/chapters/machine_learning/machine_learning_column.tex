@@ -1,5 +1,179 @@
 \clearpage
-\begin{column}{コラム}
-（内容編集のテスト）
+\begin{column}{ミニ研究}
+\textbf{深層学習による交通流予測モデルの検討}
+{\small 李康民}
+
+\subsubsection*{研究の背景と目的}
+
+本研究では，高速道路の交通流データを用いて，将来の交通状態を予測するモデルを検討した．
+目的は大きく二つである．第一に，単純なNeural NetworkであるMulti-Layer Perceptron（MLP）を用いて，交通量$Q$，速度$V$，交通密度$K$の短期予測を行うことである．
+第二に，MLPをMoving AverageおよびLWR方程式に基づくモデルと比較し，どのようなデータ条件でNeural Networkが有効に働くのかを確認することである．
+
+ここで特に注目したのは，NNの性能を高めるためにはモデル構造だけでなく，入力データの性質や前処理がどの程度重要になるのか，という点である．
+
+\subsubsection*{使用データと予測タスクの設定}
+
+使用したデータは，2024年1月の東名高速道路における5分間隔の交通流データである．
+データには，時刻，KP，lane，交通量$Q$，速度$V$，交通密度$K$が含まれている．
+まず時空間分布を確認すると，交通量$Q$には明確な日周期性が見られた．
+夜間には交通量が低下し，日中に再び増加するというパターンが繰り返されている．
+一方，速度$V$は多くの時間帯で比較的安定しており，全体としては周期性と短期的安定性が強いデータであると考えられる．
+
+\begin{center}
+  \includegraphics[width=0.78\linewidth]{assets/machine_learning/traffic_heatmap.png}
+  \captionof{figure}{交通量$Q$と速度$V$の時空間分布}
+  \label{fig:ml-traffic-heatmap}
+\end{center}
+
+laneごとの集計では，交通量や速度の絶対値に大きな差が見られた．
+特に一部のlaneでは交通量のピークが大きく，一方で別のlaneでは交通量が小さく，欠損率も高かった．
+本研究では，欠損を単なるセンサーエラーとしてだけでなく，対象laneに車両が存在しない場合や，道路構造上そのlaneが一部区間にしか存在しない場合も含むものとして扱った．
+そのため，欠損率の高いlaneをそのまま学習に利用すると，モデルが本来の交通状態ではなく，データの欠損構造を学習してしまう恐れがある．
+
+予測タスクとしては，Lookbackを12，Horizonを12に設定し，過去60分のデータから未来60分の交通状態を予測する問題を基本ケースとした．
+データはTrain，Validation，Testに0.6，0.2，0.2の割合で分割し，Epochは12回としてMLPを学習した．
+
+\subsubsection*{Baselineにおけるモデル比較}
+
+まず，全laneを用いた基本ケースで，Moving Average，Simple MLP，LWR Godunovモデルを比較した．
+評価指標には，交通量$Q$，速度$V$，交通密度$K$に対するRMSEとMAE，および渋滞判定に対するCongestion F1を用いた．
+RMSEは大きな誤差の影響を受けやすく，MAEは平均的なずれの大きさを表す．
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Model & RMSE(Q) & MAE(Q) & RMSE(V) & MAE(V) & RMSE(K) & MAE(K) & F1 \\
+\midrule
+Moving Average & 102.16 & 45.23 & 5.60 & 2.06 & 177.85 & 1.06 & 0.920 \\
+Simple MLP     & 138.13 & 89.58 & 8.61 & 4.59 & 256.16 & 2.17 & 0.129 \\
+LWR Godunov    & 350.83 & 194.02 & 60.70 & 43.41 & 478.87 & 19.96 & 0.166 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{全laneを用いたBaseline条件での予測性能比較}
+\label{tab:baseline-comparison}
+\end{center}
+
+表\ref{tab:baseline-comparison}より，Baseline条件ではMoving Averageが最も高い性能を示した．
+特に$Q$と$V$のRMSE，MAEはMLPよりも小さく，Congestion F1も高い値となった．
+これは，今回の交通流データでは「現在の交通状態がしばらく継続する」という単純な仮定が非常に有効だったことを意味する．
+交通量には日周期性が強く，速度も短時間では大きく変化しにくいため，Moving Averageのような単純なbaselineでも十分に高い性能を示したと考えられる．
+
+一方で，MLPは基本的な周期パターンを学習できているものの，Moving Averageを上回ることはできなかった．
+LWRモデルは交通流理論に基づくモデルであるが，今回のデータでは欠損や観測点ごとのばらつきの影響を受け，誤差が大きくなった．
+
+\subsubsection*{MLPによる予測結果の特徴}
+
+MLPのLearning Curveを見ると，Epoch 0から2付近でlossが急激に低下している．
+これは，MLPが交通データに含まれる基本的な周期性や平均的な傾向を早い段階で学習していることを示している．
+一方で，その後のvalidation lossの改善は小さく，学習を続けても大きな性能向上は見られなかった．
+
+\begin{center}
+  \includegraphics[width=0.72\linewidth]{assets/machine_learning/mlp_learning_curve.png}
+  \captionof{figure}{MLPのLearning Curve}
+  \label{fig:mlp-learning-curve}
+\end{center}
+
+\begin{center}
+  \includegraphics[width=0.72\linewidth]{assets/machine_learning/mlp_prediction.png}
+  \captionof{figure}{Simple MLPによる交通量$Q$の予測}
+  \label{fig:mlp-prediction}
+\end{center}
+
+また，予測例を見ると，MLPの予測値は実測値の細かな上下変動を追いかけるというよりも，平均的な値に近づく傾向があった．
+これは，MSEを最小化する学習では，不確実な変動を無理に予測するよりも，平均的な値を出す方が損失を小さくしやすいためである．
+特にMSEを損失関数として用いた場合，予測が困難な急激変動を無理に追従するよりも，平均的な値へ収束する方が損失を安定して小さくできるため，結果として平坦な予測が生成されやすい．
+今回のMLPは安定して学習していたが，突発的な変動や局所的な非線形パターンを十分に再現するには限界があった．
+
+\subsubsection*{欠損率の高いlaneを除外した場合}
+
+次に，欠損率の高いlaneを除外して同じ予測タスクを行った．
+これは，欠損の多いデータがMLPの学習にノイズとして作用しているかを確認するためである．
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Model & RMSE(Q) & MAE(Q) & RMSE(V) & MAE(V) & RMSE(K) & MAE(K) & F1 \\
+\midrule
+Simple MLP     & 119.27 & 75.57 & 7.84 & 4.31 & 228.56 & 1.82 & 0.371 \\
+Moving Average & 131.91 & 76.69 & 7.27 & 3.60 & 210.24 & 1.68 & 0.751 \\
+LWR Godunov    & 429.36 & 313.80 & 65.25 & 50.68 & 662.99 & 38.50 & 0.314 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{欠損率の高いlaneを除外した場合の予測性能比較}
+\label{tab:lane-removal-comparison}
+\end{center}
+
+表\ref{tab:lane-removal-comparison}では，Simple MLPの$Q$に対するRMSEとMAEがBaselineより改善している．
+これは，欠損率の高いlaneを除くことで，MLPがより安定した交通パターンを学習できるようになったためである．
+一方で，Congestion F1ではMoving Averageの方が高く，渋滞状態の判定では単純な平均ベースの手法が依然として強い結果となった．
+この結果から，NNの性能改善には，モデル構造の変更だけでなく，入力データの品質管理が重要であることが分かる．
+
+\subsubsection*{Lookbackの変更と時間依存性}
+
+さらに，Lookbackを12から6に短くし，過去30分のデータから未来60分を予測する設定を試した．
+これは，MLPが長い過去履歴を利用しているのか，それとも直近の交通状態に主に依存しているのかを確認するためである．
+
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Model & RMSE(Q) & MAE(Q) & RMSE(V) & MAE(V) & RMSE(K) & MAE(K) & F1 \\
+\midrule
+Simple MLP     & 113.33 & 73.03 & 7.65 & 4.24 & 799.57 & 2.95 & 0.408 \\
+Moving Average & 120.66 & 69.66 & 7.09 & 3.50 & 209.86 & 1.59 & 0.766 \\
+LWR Godunov    & 429.19 & 313.71 & 65.24 & 50.68 & 662.88 & 38.50 & 0.314 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Lookbackを6に変更した場合の予測性能比較}
+\label{tab:lookback-comparison}
+\end{center}
+
+表\ref{tab:lookback-comparison}を見ると，Lookbackを短くしてもMLPの$Q$に対する誤差は大きく悪化せず，むしろBaselineより改善した．
+このことから，今回のMLPは長い過去履歴よりも，直近の交通状態や時間帯ごとの平均的なパターンに強く依存して予測していたと考えられる．
+ただし，$K$のRMSEは不安定であり，交通密度の予測には外れ値やデータのばらつきが強く影響していた可能性がある．
+
+\subsubsection*{特徴量重要度とMLPの学習傾向}
+
+Moving Averageによる時空間予測を見ると，KP方向の空間分布は実測値とよく一致していた．
+一方で，時間方向の細かな変化は平滑化され，急激なピークを再現することは難しかった．
+つまり，Moving Averageは空間的な構造と短期安定性をうまく利用できるが，突発的な時間変動の表現には限界がある．
+
+\begin{center}
+  \includegraphics[width=0.72\linewidth]{assets/machine_learning/moving_average_timespace.png}
+  \captionof{figure}{Moving Averageによる時空間予測の比較}
+  \label{fig:moving-average-timespace}
+\end{center}
+
+SHAPによる特徴量重要度を確認すると，速度$V$が最も重要な特徴量として利用されていた．
+速度変化は混雑状態や流量変化を早く反映するため，短期予測において重要な情報になったと考えられる．
+また，直近stepの特徴量が強く利用されており，MLPが主に短期的な交通状態に依存して予測していることが分かる．
+これは，Lookbackを短くしても性能が大きく変化しなかった結果とも整合的である．
+
+\begin{center}
+  \includegraphics[width=0.72\linewidth]{assets/machine_learning/shap_importance.png}
+  \captionof{figure}{SHAPによる特徴量重要度}
+  \label{fig:shap-importance}
+\end{center}
+
+\subsubsection*{結びに}
+
+本研究では，東名高速道路の交通流データを用いて，MLP，Moving Average，LWRモデルによる短期予測を比較した．
+その結果，MLPは周期的な傾向を学習できるものの，予測値が平均的で平坦になりやすく，Moving Averageを明確に上回るには至らなかった．
+
+また，Lookbackを短くしても性能が大きく変化しなかったことや，SHAPで直近stepの重要度が高かったことから，今回のMLPは長期依存関係よりも，直近の交通状態に強く依存して予測していたと考えられる．
+
+また，欠損率の高いlaneを除外することでMLPの性能が改善したことから，NNの性能はモデル構造だけでなく，入力データの品質に大きく依存することが確認された．
+今回のデータでは，交通状態そのものが比較的予測しやすく，複雑な非線形性が強く現れていなかった可能性がある．
+本研究を通じて，交通流予測においては単純にモデルを複雑化するだけでは十分ではなく，交通データが持つ周期性，欠損構造，lane構造，短期安定性といった特性を理解した上で，適切な前処理や特徴設計を行うことが重要であることが確認された．
+今後は，RNNやTransformerのような時系列モデル，ARIMAやSARIMAなどの統計的手法，さらに交通流保存則を組み込むPINNとの比較も有効であると考えられる．
+
 \end{column}
 \clearpage
