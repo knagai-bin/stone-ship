@@ -1,5 +1,171 @@
 \clearpage
-\begin{column}{ミニ研究}
-（ここに内容を記入してください）
+\begin{column}{神奈川県央地域でのデマンド型交通の対象地区の選定}
+{\small 永井鴻平}
+    
+　神奈川県央に位置する海老名市, 綾瀬市, 大和市, 座間市の4市を対象に, オンデマンド交通の対象ゾーン選定の検討を行った.
+
+　対象ゾーン内の利用者は, ハブから出発した車両にピックアップされ, 一旦ハブへ集約, その後目的地へ送られることを想定する.
+ハブは, 4市のおよそ中央に位置する, さがみの駅南口とした.
+
+　対象の需要は, 4市内を相互発着する朝7時から10時台のトリップとし, 鉄道によるものを除いた.
+対象のトリップ数は1,723件であった.
+選定するゾーンの単位は東京都市圏パーソントリップ調査の地区コードとし, 4市内のゾーン数は合計で319であった.
+
+　ゾーンの選定は, 目的関数
+\begin{equation}
+    \sum_{i \in I} w_{i} \~{q}_i x_{i} - \nu k
+    \label{col4-5:eq:objective}
+\end{equation}
+を最大化する問題として定式化した.
+決定変数はゾーン$i$が選定されるか否かを表す二値変数$x_i$と, サービスに供される車両の台数$k$である.
+ここで, $I$はゾーン全体の集合, $w_i$はゾーン$i$の重み, $\~{q}_i$はゾーン$i$の有効需要, $\nu$は車両1台あたりのコストである.
+
+　重み$w_i$は, 自身での運転や徒歩での移動が困難な利用者を重視したサービス設計のため, ゾーン$i$の対象トリップのうち, 60歳以上または外出に身体的困難を伴う利用者によるトリップの割合$r_i$を用いて,
+\begin{equation}
+    w_i = 1 + \theta r_i
+\end{equation}
+と定義した. $\theta$は外出が困難な利用者をどの程度重視するかを表すパラメータである.
+$\theta = 1$, すなわちゾーン$i$の対象トリップが全て外出困難者によるとき, $w_i = 2$となり, そのゾーンの重みが通常の2倍になる.
+
+　有効需要$\~{q}_i$は, 対象トリップのうち, サービスの初期利用者として10\%程度が期待できると仮定し,
+\begin{equation}
+    \~{q}_i = 0.1 q_i
+\end{equation}
+と定義した. $q_i$はゾーン$i$を発着する対象トリップ数である.
+
+　車両1台あたりのコスト$\nu$は, サービス対象とする需要とのバランスを考慮し, 1台あたりのコストが需要20件と対応するよう,
+$\nu = 20$
+とした.
+
+　決定変数の整数制約条件として, 
+\begin{align}
+    x_i &\in \{0, 1\} \\
+    k &\in \mathbb{Z}, 1 \leq k \leq 30
+\end{align}
+を課した. 
+ゾーン$i$がサービス対象に選定されるとき$x_i = 1$, 選定されないとき$x_i = 0$となる.
+車両の台数の上限は30台とした.
+
+　また, 容量制約
+\begin{equation}
+    \sum_{i \in I} \~{q}_i s_i x_i \leq \eta H k,
+\end{equation}
+およびサービス対象とする需要の最低カバー率制約
+\begin{equation}
+    \sum_{i \in I} \~{q}_i x_i \geq \gamma \sum_{i \in I} \~{q}_i
+\end{equation}
+を課した.
+ここで, $s_i$はハブからゾーン$i$を往復する時の所要時間であり, 平均走行速度$18 \, \mathrm{km/h}$, 乗り降りや車両の折り返しにかかるバッファ時間を8分と仮定して,
+\begin{equation}
+    s_i = \varepsilon \left( \frac{2d_i}{18} \times 60 + 8 \zeta \right) \, [\text{分}]
+    \label{col4-5:eq:service_time}
+\end{equation}
+と定義した. $d_i$はハブからゾーン$i$までの走行距離である.
+走行距離を求める際, ゾーンの代表点はゾーン内の対象トリップ発着点の重心とし, 実際の道路ネットワークに基づいた最短経路を用いた.
+$\varepsilon$は, 需要が集中したゾーンでの相乗り効果を考慮するための係数であり, ゾーン$i$の有効需要の密度$p_i\, [\mathrm{件/km^2}]$を用いて,
+\begin{equation}
+    \varepsilon = 1 - 0.1565 \sqrt{p_i}
+\end{equation}
+と定義した.
+選定対象のゾーンのうち, $p_i$最大のゾーンで$\varepsilon \approx 0.3$となるよう設定した.
+
+　また, $\zeta$は外出困難な利用者が利用する際, 乗降などにその他の利用者よりも時間がかかることを表現するための係数であり,
+\begin{equation}
+    \zeta = 1 + 7 r_i
+\end{equation}
+と定義した.
+
+　$\eta$は車両の稼働率, $H$はサービス運用時間, $\gamma$は需要の最低カバー率である.
+需要の対象トリップの抽出時間に合わせ, $H = 240\, [\mathrm{分}]$とした.
+また, $\eta = 0.85$, $\gamma = 0.5$とした.
+
+　この問題は, ゾーンの選定と車両台数の決定を同時に行う組合せ最適化問題であり, 整数計画問題として解くことができる.
+対象の需要$\~{q}_i$の分布と, $s_i/\varepsilon$の分布, および$d_i$の算出に用いた道路ネットワークを図\ref{col4-5:fig:precondition}に示す.
+
+\begin{center}
+    \begin{tabular}{cc}
+        \includegraphics[width=0.45\linewidth]{assets/optimization/optimization/columns/nagai/demand.png} &
+        \includegraphics[width=0.45\linewidth]{assets/optimization/optimization/columns/nagai/service_time.png} \\
+        (a) & (b)
+    \end{tabular}
+    \captionof{figure}{ゾーンごとの (a) 需要$\~q_{i}$の分布, (b) ハブからの所要時間$s_i/\varepsilon$の分布}
+    \label{col4-5:fig:precondition}
+\end{center}
+
+　$\theta = 10$としたときのゾーンの選定結果を図\ref{col4-5:fig:result1}に示す.
+このとき, 車両台数$k = 15 \,[\mathrm{台}]$であった.
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{assets/optimization/optimization/columns/nagai/result1.png}
+    \captionof{figure}{ゾーンの選定結果}
+    \label{col4-5:fig:result1}    
+\end{center}
+
+　結果から, ハブを中心にゾーンが選択されている様子が見られる.
+一方で, ハブから遠いゾーンであっても, $r_{i}$が大きいゾーンは選択されやすく, ハブに近くても$r_{i}$が小さいゾーンは選択されていないものがあることもわかり, 重み$w_i$の設定や, $\zeta$によるバッファ時間の増加がゾーンの選定に影響を与えていることが確認できた.
+
+　次に, サービスに供する車両の全てを置き換え, 外出が困難な利用者が利用するときもバッファ時間を増加させないようにした場合を考える.
+展開式のステップや, 車椅子に乗ったまま乗降できるような設備を備えた高機能車両を導入することを想定し, 車両コストは相応に増加するものとした.
+
+目的関数は, 式\eqref{col4-5:eq:objective}の第2項に対して通常仕様車に対する高機能車のコスト係数$\beta$をかけ,
+\begin{equation}
+    \sum_{i \in I} w_{i} \~{q}_i x_{i} - \beta \nu k
+\end{equation}
+とした.
+また, 式\eqref{col4-5:eq:service_time}において$\zeta = 1$とし, 外出困難な利用者が利用するときもバッファ時間を増加させないようにした.
+
+　$\theta = 10$, $\beta = 1.2$としたときのゾーンの選定結果を図\ref{col4-5:fig:result2}に, 車両台数やカバー率などを, 通常仕様車の結果と合わせて表\ref{col4-5:tab:results}に示す.
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{assets/optimization/optimization/columns/nagai/result2.png}
+    \captionof{figure}{高機能車両を導入した場合のゾーンの選定結果}
+    \label{col4-5:fig:result2}
+\end{center}
+
+\begin{center}
+    \captionof{table}{通常仕様車と高機能車両のゾーン選定結果の比較}
+    \label{col4-5:tab:results}
+    \begin{tabular}{lcc}
+        \toprule
+        & 通常仕様車 & 高機能車両 \\
+        \midrule
+        車両台数 & 15 & 10 \\
+        選定ゾーン数 & 143 & 158 \\
+        需要カバー率 & 51.2\% & 56.4\% \\
+        外出困難者のカバー率 & 74.9\% & 82.7\% \\
+        その他の利用者のカバー率 & 42.3\% & 46.4\% \\
+        \bottomrule
+    \end{tabular}
+\end{center}
+
+　結果を図\ref{col4-5:fig:result1}と比較すると, 高機能車を導入することで, 外出困難な利用者が利用するゾーンの選定がより促進されている様子が見られる.
+表\ref{col4-5:tab:results}から, 高機能車の導入によって需要のカバー率が向上したことがわかるが, 外出困難者のカバー率だけでなく, その他の利用者のカバー率も向上していることがわかる.
+
+　最後に, 高機能車を導入した場合について, 外出困難者の重視度$\theta$および高機能車のコスト係数$\beta$を変化させてゾーン選定を行い, それぞれの係数の影響を調べた.
+影響は選定されたゾーンに基づく需要のカバー率と, 決定された車両台数で確認した.
+結果を図\ref{col4-5:fig:contour_disadv}と図\ref{col4-5:fig:contour_other}に示す.
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{assets/optimization/optimization/columns/nagai/contour_disadv.png}
+    \captionof{figure}{外出困難者の重視度$\theta$と高機能車のコスト係数$\beta$の影響 (外出困難者)}
+    \label{col4-5:fig:contour_disadv}
+\end{center}
+
+\begin{center}
+    \includegraphics[width=0.7\linewidth]{assets/optimization/optimization/columns/nagai/contour_other.png}
+    \captionof{figure}{外出困難者の重視度$\theta$と高機能車のコスト係数$\beta$の影響 (その他の利用者)}
+    \label{col4-5:fig:contour_other}
+\end{center}
+
+　当然, 外出困難者を重視するほど, また, 高機能車のコストが下がるほど, 外出困難者のカバー率は向上する.
+通常仕様車のみでサービスを運営すると, 外出困難者を重視するにつれて車両容量が逼迫し, その他の利用者のカバー率が低下することが想定されるが, 高機能車の場合では, 双方のカバー率を両立させやすい.
+特筆すべき現象として, $\theta$も$\beta$も大きい, すなわち「車両は高いが外出困難者は重視したい」領域において, その他の利用者のカバー率が$\theta = 1$のときよりも低下してしまうことがある.
+これは, 外出困難車を重視した結果, その他の利用者が不利益を被っている領域と解釈することができ, 公的サービスの運営としては望ましくない.
+今回の検討条件 ($\beta = 1.2$)では, $\theta \leq 6$ではこうした傾向が強く, 公平感を維持しつつ高機能車を導入することは難しいと考えられる.
+$\theta \geq 8$程度になると, 高機能車の導入によって利用者全体が恩恵を得やすくなり, 公平感を維持しつつ高機能車を導入することが現実的になる.
+
+　かなり大きな$\theta$や$\zeta$, 控えめな$\beta$を設定し, 高機能車を有利に扱う検討を行ったが, それでも高機能車を合理的に導入できる条件は限定的であった.
+この結果は, 経済的合理性によってオンデマンド交通のサービス性を向上することは難しく, いかに公的資金を投入するか, またその理由を社会に納得させるか, といった課題の重要性を示唆している.
+
 \end{column}
 \clearpage
