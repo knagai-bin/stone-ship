@@ -38,6 +38,7 @@
 \usepackage{capt-of}
 \usepackage{tcolorbox}
 \tcbuselibrary{breakable,skins}
+\usepackage{etoolbox}
 \usepackage[dvipdfm, pdfstartview=FitH, bookmarksnumbered = true, linkbordercolor={1 1 1}, citebordercolor={1 1 1}]{hyperref}
 \usepackage{pxjahyper} % しおりが文字化けする対策
 \usepackage{mathtools}
@@ -99,6 +100,11 @@
 \usepackage{bm}
 \newcommand{\argmax}{\mathop{\rm arg~max}\limits}
 
+% 章担当者名（章タイトル直下に右寄せで表示）
+\newcommand{\chapterauthor}[1]{%
+  {\par\vspace{0.5em}\hfill\small #1\par\vspace{0.5em}}%
+}
+
 % 節レベルの相互参照マクロ（\sectionは節，\subsectionは小節，\subsubsectionは項）
 \newcommand{\sref}[1]{第\ref{#1}節}
 \newcommand{\ssref}[1]{第\ref{#1}小節}
@@ -111,16 +117,19 @@
   fonttitle=\bfseries, breakable, #1
 }
 
-% コラム環境（番号なし，タイトル必須）
-\newtcolorbox{column}[1]{
-  title={コラム：#1},
+% コラム環境（番号なし，タイトル必須，氏名オプション）
+\newtcolorbox[list inside=loc]{column}[2]{
+  title={コラム：#1\ifblank{#2}{}{\,--\,#2}},
+  list entry={コラム：#1\ifblank{#2}{}{\,--\,#2}},
   colback=gray!10!white, colframe=gray!50!black,
-  fonttitle=\bfseries, breakable
+  fonttitle=\bfseries, breakable,
+  before upper={\setcounter{secnumdepth}{3}}
 }
 
 \begin{document}
 \input{cover.tex}
 \tableofcontents
+\tcblistof[\chapter*]{loc}{コラム一覧}
 
 % \include{chapters/sample}
 
