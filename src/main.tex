@@ -117,14 +117,62 @@
   fonttitle=\bfseries, breakable, #1
 }
 
+% コラム内見出し用：各コマンドのオリジナルを保存（グローバル）
+\let\columnsection\section
+\let\columnsubsection\subsection
+\let\columnsubsubsection\subsubsection
+\let\columnparagraph\paragraph
+\newcounter{colsecS}   % \section 用
+\newcounter{colsecA}   % \subsection 用
+\newcounter{colsecB}   % \subsubsection 用
+\newcounter{colsecC}   % \paragraph 用
+
+% コラム内見出しのヘルパー（unstarred 用）と環境定義
+% \@ifstar を使うため makeatletter ブロック内でまとめて定義する
+\makeatletter
+\newcommand{\col@secSnum}[1]{%
+  \stepcounter{colsecS}%
+  \setcounter{colsecA}{0}\setcounter{colsecB}{0}\setcounter{colsecC}{0}%
+  \columnsection*{\thecolsecS\hspace{1\zw}#1}%
+}
+\newcommand{\col@secAnum}[1]{%
+  \stepcounter{colsecA}%
+  \setcounter{colsecB}{0}\setcounter{colsecC}{0}%
+  % \section が使われていれば "S.A"，なければ "A" のみ
+  \ifnum\value{colsecS}>0
+    \columnsubsection*{\thecolsecS.\thecolsecA\hspace{1\zw}#1}%
+  \else
+    \columnsubsection*{\thecolsecA\hspace{1\zw}#1}%
+  \fi
+}
+\newcommand{\col@secBnum}[1]{%
+  \stepcounter{colsecB}%
+  \setcounter{colsecC}{0}%
+  \columnsubsubsection*{（\thecolsecB）\hspace{1\zw}#1}%
+}
+\newcommand{\col@secCnum}[1]{%
+  \stepcounter{colsecC}%
+  \columnparagraph*{(\alph{colsecC})\hspace{0.5\zw}#1}%
+}
+
 % コラム環境（番号なし，タイトル必須，氏名オプション）
 \newtcolorbox[list inside=loc]{column}[2]{
   title={コラム：#1\ifblank{#2}{}{\,--\,#2}},
   list entry={コラム：#1\ifblank{#2}{}{\,--\,#2}},
   colback=gray!10!white, colframe=gray!50!black,
   fonttitle=\bfseries, breakable,
-  before upper={\setcounter{secnumdepth}{3}}
+  before upper={%
+    \setcounter{colsecS}{0}%
+    \setcounter{colsecA}{0}%
+    \setcounter{colsecB}{0}%
+    \setcounter{colsecC}{0}%
+    \renewcommand{\section}{\@ifstar{\columnsection*}{\col@secSnum}}%
+    \renewcommand{\subsection}{\@ifstar{\columnsubsection*}{\col@secAnum}}%
+    \renewcommand{\subsubsection}{\@ifstar{\columnsubsubsection*}{\col@secBnum}}%
+    \renewcommand{\paragraph}{\@ifstar{\columnparagraph*}{\col@secCnum}}%
+  }
 }
+\makeatother
 
 \begin{document}
 \input{cover.tex}
